@@ -1,6 +1,6 @@
 {
   "author": "Jesus Arribas (https://github.com/jbasg)",
-  "name": "nami",
+  "name": "ami-asterisk",
   "description": "An asterisk manager interface client, uses EventEmitter to communicate events, will allow you to send actions, and receive responses (and associated events), and also receive async events from serveri based on https://github.com/marcelog/Nami",
   "version": "0.1.1",
   "homepage": "https://github.com/jbasg/Nami",
@@ -22,7 +22,12 @@
   "scripts": {
     "test": "index"
   },
-  "engines" : { "node" : ">=0.6.5" },
+  "engines": {
+    "node": ">=0.6.5"
+  },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "bugs": {
+    "url": "https://github.com/jbasg/Nami/issues"
+  }
 }
