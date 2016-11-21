@@ -41,7 +41,7 @@ var timer = require('timers');
 function Nami(amiData) {
     var self = this;
     Nami.super_.call(this);
-    this.logLevel = 3; // debug level by default.
+    this.logLevel = 0; // debug level by default.
 
     var genericLog = function(minLevel, fun, msg) {
         if(self.logLevel >= minLevel) {
@@ -314,6 +314,34 @@ Nami.prototype.reopen = function () {
 };
 
 /**
+ * Used to serialize this message to a text representation understood by
+ * AMI. Will return a set of lines delimited by \r\n and the message is delimited by
+ * \r\n\r\n.
+ * @returns {String}
+ */
+Nami.prototype.marshall = function (actionobj) {
+    var output = "", key;
+    for (key in actionobj) {
+        if (key === 'variables') {
+            continue;
+        }
+        if (actionobj.hasOwnProperty(key)) {
+            if (key !== 'lines' && key !== 'EOL' && (typeof (actionobj[key]) !== 'function')) {
+                output = output + key + ": " + actionobj[key] + this.EOL;
+            }
+        }
+    }
+    for (key in actionobj.variables) {
+        output = output + 'Variable: ' + key + '=' + actionobj.variables[key] + this.EOL;
+    }
+    output = output + this.EOL;
+    return output;
+};
+
+
+
+
+/**
  * Sends an action to AMI.
  *
  * @param {Action} action The action to be sent.
@@ -329,8 +357,36 @@ Nami.prototype.send = function (action, callback) {
     this.socket.write(action.marshall());
 };
 
+Nami.prototype.ActionUniqueId = (function() {
+    var nextId = 0;
+    return function() {
+        return nextId++;
+    }
+})();
+
+/**
+ * Sends an action to AMI.
+ *
+ * @param {Action} action The action to be sent.
+ * @param {function} callback The optional callback to be invoked when the
+ * responses arrives.
+ *
+ * @returns void
+ */
+Nami.prototype.sendAction = function (action, callback) {
+    this.logger.debug('Sending: ' + util.inspect(action));
+    action.ActionID = action.actionid || this.ActionUniqueId();
+    delete action.actionid;
+    this.callbacks[action.ActionID] = callback;
+    this.responses[action.ActionID] = "";
+    var objaction = this.marshall(action);
+    this.socket.write(objaction);
+};
+
+
 exports.Nami = Nami;
 exports.Actions = action;
 exports.Event = namiEvents;
 exports.Response = namiResponse;
+
 
